@@ -122,7 +122,7 @@ class pipe:
         frictions.sort
         cost = []
         costd = pipe_id.index(D)
-        for x in pipe_data                                                       
+        for pipe_data as y in pipe_data.keys                                                       
 
 class bend:
     def __init__(self,bend_num, bend_ang,bend_coe):
