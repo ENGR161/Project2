@@ -1,27 +1,26 @@
-ENERGY_OUT = 120     #KWh
-GRAVITY = 9.81       #m/s^2
-WATER_DENSITY = 1000 #kg/m^3
-PHOUSE_COST = 100000 #$
-GPIPE_COST = 500     #$
-
-
 import math
 
+ENERGY_OUT = 10000000    #j
+GRAVITY = 9.81           #m/s^2
+WATER_DENSITY = 1000     #kg/m^3
+PHOUSE_COST = 100000     #$
+GPIPE_COST = 500         #$
 
-#function that calculates the cost and efficiency of filling the reservoir
-def filling(vel):
-    
-#function that calculates the cost and efficiency of draining the reservoir
-def draining(vel):
 
-#function that calculates the overall efficiency of the hydropump system
-def efficiency():
-
-def best_pipe(pipe_data):
+def best_pipe(pipe_data,pipe_id):
     pipes = []
     for f in pipe_data.keys():
-        for d in f:
+        for cost in range(len(d)):
             pipes.append(pipe(f,d))
+
+ 
+def best_turb(turbine_data):
+    float tl = 10000000000000
+    for x ,y in turbine_data.items()
+            turb_loss = ((1/x)-1)*ENERGY_OUT
+            if tl > turb_loss:
+                tl = turbloss
+                cost = turbine_data
 
 def best_zone():
     zones = []
@@ -29,46 +28,55 @@ def best_zone():
     zones.append(zone(100000,None,None,None,1))
     zones.append(zone(100000,None,None,None,1))
 
+#function that calculates the cost and efficiency of filling the reservoir
+def filling(vel):
+    pass
 
-    
+#function that calculates the cost and efficiency of draining the reservoir
+def draining(vel):
+    pass
+
+#function that calculates the overall efficiency of the hydropump system
+def efficiency():
+    pass
 
 #function that calculates the overall cost of the hydropump system
 def cost():
+    pass
 
 class zone:
-    def __init__(self,zone_sa,pipes,pump,turbine,zone_depth): 
-        self.depth = zone_depth
-        self.elev = pump.getElev()
-        self.sa = zone_sa
-        self.pipes = pipes
-        self.pump = pump
-        self.turbine = turbine
+    def __init__(self,area,height,length,length_r,raise_cost,road_cost,site_prep,add_cost): 
+        self.area = area
+        self.height = height
+        self.length = length
+        self.length_r
+        self.raise_cost
+        self.road_cost
+        self.site_prep
+        self.add_cost
     
     def getDepth(self):
         return self.depth
-
-    def getElev(self):
-        return self.elev
-
-    def getSurfaceArea(self):
-        return self.sa
     
-    def getPipes(self):
-        return self.pipes
+        
+
+    def flowRate(self):
+        return (1 * 10 ** 7) / (GRAVITY / self.height / 1000)
+
+    def flowVelocity(self):
+        return math.sqrt(2 * GRAVITY * self.height)
     
-    def getPump(self):
-        return self.pump
-
-    def getTurbine(self):
-        return self.turbine
+    def pipeDiameter(self):
+        velocity = self.flowVelocity()
+        volume = self.flowRate()
+        return math.sqrt(1.273 * volume / velocity) 
     
-
-
-
+    
 class pipe:
-    def __init__(self,pipe_fr,pipe_d,pipe_l = 1,is_raised = False, bends = []):
+    def __init__(self,pipe_fr,pipe_d,zone,pipe_l = 1, bends = []):
         self.friction = pipe_fr
         self.diameter = pipe_d
+        self.zone = zone
         self.length = pipe_l
         self.is_raised = is_raised
         self.bends = bends
@@ -85,23 +93,36 @@ class pipe:
     def getIsRaised(self):
         return self.is_raised
 
-    def getBends(self):
-        return self.bends
-
-    def setLength(self,length):
+     def setLength(self,length):
         self.length = length
 
     def setIsRaised(self,is_raised):
         self.is_raised = is_raised
 
-    def setIsRaised(self,is_raised):
+   def setIsRaised(self,is_raised):
         self.is_raised = is_raised
 
     def setBends(self,bends):
         self.bends = bends
-    
-    def frictionLoss():
 
+    def setZone(self,zone):
+        self.zone = zone   
+
+    def getBends(self):
+        return self.bends
+    
+    def frictionLoss(self, friction):
+        D = self.zone.pipeDiameter()
+        V = self.zone.flowVelocity()
+        L = self.zone.getLength()
+        frictions = []
+        for x in pipe_data.keys():
+            effH =  x * (L * V ** 2) / (D * 2 * GRAVITY) 
+            frictions.append(effH)
+        frictions.sort
+        cost = []
+        costd = pipe_id.index(D)
+        for x in pipe_data                                                       
 
 class bend:
     def __init__(self,bend_num, bend_ang,bend_coe):
@@ -168,6 +189,8 @@ if __name__ == '__main__':
         .89: [346,380,418,460,506,557,612,673,741,815,896],
         .92: [415,456,502,552,607,668,735,808,889,978,1076]
     }
+    pump_epr = [20,30,40,50,60,70,80,90,100,110,120]
+
     pipe_data = {
         .05: [1.00,1.20,2.57,6.30,14,26,43,68,102,144,197,262,340],
         .03: [1.20,1.44,3.08,7.56,16,31,52,82,122,173,237,315,408],
@@ -176,6 +199,8 @@ if __name__ == '__main__':
         .005: [2.70,3.23,6.94,17,37,69,117,185,274,389,533,708,919],
         .002: [2.97,3.55,7.64,19,40,76,129,203,302,428,586,779,1011]
     }
+    pipe_id = [.1,.25,.5, .75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3]
+
     bend_data = {
         20: [.1,[1.00,1.49,4.93,14,32,62,107,169,252,359,492,654,849]],
         30: [.15[1.05,1.57,5.17,15,34,65,112,178,265,377,516,687,892]],
@@ -184,6 +209,8 @@ if __name__ == '__main__':
         75: [.27[1.22,1.81,5.99,17,39,76,130,206,307,436,598,795,1032]],
         90: [.3[1.28,1.90,7,18,41,80,137,216,322,458,628,835,1084]]
     }
+    bend_id = [.1,.25,.5..................]
+
     turbine_data = {
         .83: [360,396,436,479,527,580,638,702,772,849,934],
         .86: [432,475,523,575,632,696,765,842,926,1019,1120],
@@ -191,10 +218,10 @@ if __name__ == '__main__':
         .92: [622,684,753,828,911,1002,1102,1212,1333,1467,1614],
         .94: [746,821,903,994,1093,1202,1322,1455,1600,1760,1936]
     }
+    turbine_epr = [.1,.25,.5..................]
 
-    best_pipe(pipe_data)
     
-
+    
 
     '''
     pipe
@@ -211,3 +238,50 @@ if __name__ == '__main__':
     raised_pipe_cost
     other_costs
     '''
+
+
+
+'''  <chat>
+- Cisco: scott found out the diameter for pipes is 0.5m for zone 1
+- Zach: okay sounds good, do you want me to factor that in?
+
+- Cisco: we can use this info to find the most ideal pipe for zone 1 
+- Zach: okay so are we sure then that the radius is set?? so the only factor is the friction coef?
+
+- Cisco: yes, we wil test it for each friction coefficient to find best efficiency v cost #
+- Zach: okay, so are we gonna have loop that find both the best cost and efficiency at the 
+same time (this would be kinds difficult), or should we go at it by finding the couple 
+best efficiencies and then find a good cost based on those or what???
+
+- Scott: this is scott, the cost is super easily calculated by hand, so we just need to find the efficiency based of
+that one long equation-- so we find the efficiency and costs and divide them to get 
+that comparison value we talked about. If you want to do it all in the program,
+the costs are in that array that cisco typed in. Yeah, I think we can find the best ratio
+for all the parts and then just use those? 
+Yeah
+
+- Zach: ohhhhhh, so we find the ratio for each and picj the best ratio then. Okay so
+then we can do 2 separeate loops. one for efficiency and one for cost. and we'll put those into arrays,
+and then create a new ratio array using those two. sound good?
+
+- Scott: yeah, but hold on. just fyi, the values in that grid array that cisco typed in are
+$ per m, so we need to mulitly all those cost values by the length, 67.08 m.
+So the cost loop will just be those dict values * the length, and the 
+efficiency loop will be that one long equation with v = 24.24, D = .5, l = 67.08,
+and f is the variable changed (the dict keys)
+
+If you really feel like it, you could generalize it so the v, d, and l are inputted
+/ calculated for each zone so that we could easily check this for each zone. That
+might be best. I can help code too rn if you need me too. Ok I'll work on the eff loop
+- Zach: yeah I am kinda caught up here but hopefully i am leaving very soon
+
+- Cisco: hey we found out our diameter thingy is wrong. its cisco again btw
+- Zach: 
+
+- Cisco: 
+- Zach: 
+
+- Cisco: 
+- Zach: 
+
+'''
