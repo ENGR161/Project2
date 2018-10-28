@@ -45,7 +45,7 @@ class zone:
         self.pipe_length_r = pipe_l_r
         self.raise_cost
         self.road_cost
-        self.site_prep
+        self.site_prep = site_prep
         self.add_cost
     
     def getArea(self):
@@ -60,11 +60,13 @@ class zone:
     def volume(self):
         return self.mass() / 1000
 
-    def idealResHeight(self):
+    def wallHeight(self):
         volume = self.volume()
         wallHeight = volume / self.area
-        return wallHeight + self.z_height
+        return wallHeight
 
+    def idealResHeight(self):
+        return self.wallHeight() + self.z_height
     def finalResHeight(self,add_height):
         return idealResHeight() + add_height
 
@@ -138,7 +140,11 @@ class pipe:
         # for cost in pipe_data.values():                                                       
         #     costs.append(cost[indexD])
 
-        compare = [(cost[x] * heights[x]) for x in range(0, len(heights))]
+        for x in heights
+            x += self.zone.wallHeight()
+            # calculate change in costs per height and add table costs and then compare
+            
+       """ compare = [(cost[x] * heights[x]) for x in range(0, len(heights))]
         # for x in range(0, len(heights))
         #     compare.append(cost[x] * heights[x])
 
@@ -148,7 +154,7 @@ class pipe:
 
         self.friction = final_h * (D * 2 * GRAVITY) / (L * V ** 2)
 
-        return final_h     
+        return final_h """    
         
                                             
     
