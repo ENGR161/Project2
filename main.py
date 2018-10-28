@@ -54,9 +54,11 @@ class zone:
 
     def setStuff....
 
+    def mass(self):
+        return ((4.32*10 ** 11) / (GRAVITY * self.z_height))
 
     def volume(self):
-        return ((4.32*10 ** 11) / (GRAVITY * self.z_height)) / 1000
+        return self.mass() / 1000
 
     def idealResHeight(self):
         volume = self.volume()
@@ -69,8 +71,8 @@ class zone:
     def finalPipeLength(self):
         #uses final res height to get additional pipe length and adds onto length_base
         
-    def flowRate(self):
-        return (1 * 10 ** 7) / (GRAVITY / self.idealResHeight() / 1000)
+    def flowRateDown(self):
+        return (ENERGY_OUT) / (GRAVITY / self.idealResHeight() / 1000)
 
     def flowVelocityDown(self):
         return math.sqrt(2 * GRAVITY * self.idealResHeight())
@@ -80,7 +82,7 @@ class zone:
 
     def pipeDiameter(self):
         velocity = self.flowVelocity()
-        volume = self.flowRate()
+        volume = self.flowRateDown()
         return math.sqrt(1.273 * volume / velocity) 
     
     
@@ -132,7 +134,7 @@ class pipe:
         #     heights.append(effH)
         
         indexD = pipe_id.index(D)
-        costs = [cost[indexD] for cos in pipe_data.values()]
+        costs = [cost[indexD] for cost in pipe_data.values()]
         # for cost in pipe_data.values():                                                       
         #     costs.append(cost[indexD])
 
@@ -168,7 +170,9 @@ class bend:
     def bendLoss(self,vel,ang):
         for x in bend_data.keys()
             if ang == x
-            bcoe = bend_data[x][0]                            
+            bcoe = bend_data[x][0]
+        loss = bcoe * ((vel ** 2)/(2 * GRAVITY)) 
+        return loss                 
 
 
 
@@ -206,9 +210,12 @@ class turbine:
     def getElev(self):
         return self.elev
 
-    def (self):
-        return 
+    def heightTurbine(self, n):
+        EIn = (ENERGY_OUT) / n
+        dE = EIn - (ENERGY_OUT)
+        return dE / (GRAVITY * self.zone.mass())
     
+    def 
 
 
 
