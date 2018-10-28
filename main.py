@@ -142,6 +142,7 @@ class pipe:
 
         for x in heights
             x += self.zone.wallHeight()
+            cost = x *
             # calculate change in costs per height and add table costs and then compare
             
        """ compare = [(cost[x] * heights[x]) for x in range(0, len(heights))]
