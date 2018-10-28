@@ -4,19 +4,14 @@ ENERGY_OUT = 10000000    #j
 GRAVITY = 9.81           #m/s^2
 WATER_DENSITY = 1000     #kg/m^3
 PHOUSE_COST = 100000     #$
-GPIPE_COST = 500         #$
+GPIPE_COST = 500         #$/pipe
 
 
-def best_pipe(pipe_data,pipe_id):
-    pipes = []
-    for f in pipe_data.keys():
-        for cost in range(len(d)):
-            pipes.append(pipe(f,d))
 
  
 def best_turb(turbine_data):
-    float tl = 10000000000000
-    for x ,y in turbine_data.items()
+    tl = 10000000000000
+    for x ,y in turbine_data.items():
             turb_loss = ((1/x)-1)*ENERGY_OUT
             if tl > turb_loss:
                 tl = turbloss
@@ -45,27 +40,46 @@ def cost():
     pass
 
 class zone:
-    def __init__(self,area,height,length,length_r,raise_cost,road_cost,site_prep,add_cost): 
+    def __init__(self,area,zone_height,pipe_l,pipe_l_r,raise_cost,road_cost,site_prep,add_cost): 
         self.area = area
-        self.height = height
-        self.length = length
-        self.length_r
+        self.z_height = zone_height
+        self.pipe_length = pipe_l
+        self.pipe_length_r = pipe_l_r
         self.raise_cost
         self.road_cost
         self.site_prep
         self.add_cost
     
-    def getDepth(self):
+    def getArea(self):
         return self.depth
-    
+
+
+    def setStuff....
+
+
+    def volume(self):
+        return ((4.32*10 ** 11) / (GRAVITY * self.z_height)) / 1000
+
+    def idealResHeight(self):
+        volume = self.volume()
+        wallHeight = volume / self.area
+        return wallHeight + self.z_height
+
+    def finalResHeight(self,add_height):
+        return idealResHeight() + add_height
+
+    def finalPipeLength(self):
+        #uses final res height to get additional pipe length and adds onto length_base
         
-
     def flowRate(self):
-        return (1 * 10 ** 7) / (GRAVITY / self.height / 1000)
+        return (1 * 10 ** 7) / (GRAVITY / self.idealResHeight() / 1000)
 
-    def flowVelocity(self):
-        return math.sqrt(2 * GRAVITY * self.height)
+    def flowVelocityDown(self):
+        return math.sqrt(2 * GRAVITY * self.idealResHeight())
     
+    def flowVelocityUp(self, up_flow):
+        return 1.273 * up_flow / self.pipeDiameter() ** 2  
+
     def pipeDiameter(self):
         velocity = self.flowVelocity()
         volume = self.flowRate()
@@ -73,12 +87,11 @@ class zone:
     
     
 class pipe:
-    def __init__(self,pipe_fr,pipe_d,zone,pipe_l = 1, bends = []):
-        self.friction = pipe_fr
-        self.diameter = pipe_d
+    def __init__(self, zone, pipe_l = 1, bends = []):
+        self.friction
+        self.diameter
         self.zone = zone
         self.length = pipe_l
-        self.is_raised = is_raised
         self.bends = bends
     
     def getFriction(self):
@@ -93,13 +106,13 @@ class pipe:
     def getIsRaised(self):
         return self.is_raised
 
-     def setLength(self,length):
+    def setLength(self,length):
         self.length = length
 
     def setIsRaised(self,is_raised):
         self.is_raised = is_raised
 
-   def setIsRaised(self,is_raised):
+    def setIsRaised(self,is_raised):
         self.is_raised = is_raised
 
     def setBends(self,bends):
@@ -111,19 +124,34 @@ class pipe:
     def getBends(self):
         return self.bends
     
-    def frictionLoss(self, friction):
+    def frictionHeight(self, pipe_data, pipe_id, vel, length):
         D = self.zone.pipeDiameter()
-        V = self.zone.flowVelocity()
-        L = self.zone.getLength()
-        frictions = []
-        for x in pipe_data.keys():
-            effH =  x * (L * V ** 2) / (D * 2 * GRAVITY) 
-            frictions.append(effH)
-        frictions.sort
-        cost = []
-        costd = pipe_id.index(D)
-        for pipe_data as y in pipe_data.keys                                                       
+        V = vel
+        L = length
+        heights = [(x * (L * V ** 2) / (D * 2 * GRAVITY)) for x in pipe_data.keys()]
+        # for x in pipe_data.keys():
+        #     effH =  x * (L * V ** 2) / (D * 2 * GRAVITY) 
+        #     heights.append(effH)
+        
+        indexD = pipe_id.index(D)
+        costs = [cost[indexD] for cos in pipe_data.values()]
+        # for cost in pipe_data.values():                                                       
+        #     costs.append(cost[indexD])
 
+        compare = [(cost[x] * heights[x]) for x in range(0, len(heights))]
+        # for x in range(0, len(heights))
+        #     compare.append(cost[x] * heights[x])
+
+        temp = compare.sort()
+
+        final_h = heights[compare.index(temp[0])]
+
+        self.friction = final_h * (D * 2 * GRAVITY) / (L * V ** 2)
+
+        return final_h     
+        
+                                            
+    
 class bend:
     def __init__(self,bend_num, bend_ang,bend_coe):
         self.bend_num = bend_num
@@ -139,7 +167,7 @@ class bend:
     def getBendCoe(self):
         return bend_coe                           
           
-        
+
 
 class pump:
     def __init__(self,pump_ef,pipe,elev):
@@ -209,7 +237,7 @@ if __name__ == '__main__':
         75: [.27[1.22,1.81,5.99,17,39,76,130,206,307,436,598,795,1032]],
         90: [.3[1.28,1.90,7,18,41,80,137,216,322,458,628,835,1084]]
     }
-    bend_id = [.1,.25,.5..................]
+    bend_id = [.1,.25,.5]
 
     turbine_data = {
         .83: [360,396,436,479,527,580,638,702,772,849,934],
@@ -218,7 +246,9 @@ if __name__ == '__main__':
         .92: [622,684,753,828,911,1002,1102,1212,1333,1467,1614],
         .94: [746,821,903,994,1093,1202,1322,1455,1600,1760,1936]
     }
-    turbine_epr = [.1,.25,.5..................]
+    turbine_epr = [.1,.25,.5]
+
+    pipe_test = pipe()
 
     
     
