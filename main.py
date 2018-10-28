@@ -6,8 +6,6 @@ WATER_DENSITY = 1000     #kg/m^3
 PHOUSE_COST = 100000     #$
 GPIPE_COST = 500         #$/pipe
 
-
-
  
 def best_turb(turbine_data):
     tl = 10000000000000
@@ -165,8 +163,13 @@ class bend:
         return bend_ang
 
     def getBendCoe(self):
-        return bend_coe                           
-          
+        return bend_coe       
+
+    def bendLoss(self,vel,ang):
+        for x in bend_data.keys()
+            if ang == x
+            bcoe = bend_data[x][0]                            
+
 
 
 class pump:
@@ -185,7 +188,7 @@ class pump:
         return self.elev
         
     def pumpFlow(self,vel):
-        return ((self.pipe.getDiameter() ** 2) * vel)/1.273 #from engineering toolbox
+        return 
 
 
 class turbine:
@@ -203,8 +206,8 @@ class turbine:
     def getElev(self):
         return self.elev
 
-    def turbFlow(self,vel):
-        return ((self.pipe.getDiameter() ** 2) * vel)/1.273 #from engineering toolbox
+    def (self):
+        return 
     
 
 
