@@ -131,7 +131,6 @@ class pipe:
         heights = [(x * (L * V ** 2) / (D * 2 * GRAVITY)) for x in pipe_data.keys()]
         
         indexD = pipe_id.index(D)
-<<<<<<< HEAD
         #costs = [cost[indexD] for cost in pipe_data.values()]
         # for cost in pipe_data.values():                                                       
         #     costs.append(cost[indexD])
@@ -150,16 +149,6 @@ class pipe:
 """ compare = [(cost[x] * heights[x]) for x in range(0, len(heights))]
         # for x in range(0, len(heights))
         #     compare.append(cost[x] * heights[x])
-=======
-        costs = [cost[indexD] for cost in pipe_data.values()]
-
-        for x in heights
-            x += self.zone.wallHeight()
-            cost = x *
-            # calculate change in costs per height and add table costs and then compare
-            
-       """ compare = [(cost[x] * heights[x]) for x in range(0, len(heights))]
->>>>>>> d7a2773d2ecd682897d37d6d755bcb0990ab6d19
 
         temp = compare.sort()
 
