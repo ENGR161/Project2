@@ -1,4 +1,5 @@
 import math
+import sys
 
 ENERGY_OUT = 10000000    #j
 GRAVITY = 9.81           #m/s^2
@@ -38,8 +39,9 @@ def cost():
     pass
 
 class zone:
-    def __init__(self,area,zone_height,pipe_l,pipe_l_r,raise_cost,road_cost,site_prep,add_cost): 
-        self.area = area
+    def __init__(self,num,area,zone_height,pipe_l,pipe_l_r,raise_cost,road_cost,site_prep,add_cost): 
+        self.number = num
+        self.idealArea = area
         self.z_height = zone_height
         self.pipe_length = pipe_l
         self.pipe_length_r = pipe_l_r
@@ -48,31 +50,51 @@ class zone:
         self.site_prep = site_prep
         self.add_cost = add_cost
     
-    def getArea(self):
-        return self.depth
+    def getIdealArea(self):
+        return self.idealArea
 
+    def getZoneHeight(self):
+        return self.z_height
+
+    def getPipeLength(self):
+        return self.pipe_length
 
     #def setStuff...
-        
-    def mass(self):
+
+    def perimeter(self, area_new):
+        if num == 1:
+            return 4 * math.sqrt(area_new)
+        elif num ==2:
+            return (15/4) * math.sqrt((16*area)/math.sqrt(105))
+        else:
+            pass
+
+    def idealMass(self):
         return ((4.32*10 ** 11) / (GRAVITY * self.z_height))
 
-    def volume(self):
-        return self.mass() / 1000
+    def idealVolume(self):
+        return self.idealMass() / 1000
 
-    def wallHeight(self):
-        volume = self.volume()
-        wallHeight = volume / self.area
+    def idealWallHeight(self):
+        volume = self.idealVolume()
+        wallHeight = volume / self.idealArea
         return wallHeight
 
     def idealResHeight(self):
-        return self.wallHeight() + self.z_height
+        return self.idealWallHeight() + self.z_height
+
+    def finalVolume(self,height_tot):
+        return (4.32 * 10 ** 11) / (GRAVITY * height_tot * 1000)
+
+    def finalArea(self,height_tot,height_wall):
+        return self.finalVolume(height_tot) / height_wall
     
     def finalResHeight(self,add_height):
         return self.idealResHeight() + add_height
 
-    #def finalPipeLength(self):
+    def finalPipeLength(self):
         #uses final res height to get additional pipe length and adds onto length_base
+        pass
         
     def flowRateDown(self):
         return (ENERGY_OUT) / (GRAVITY / self.idealResHeight() / 1000)
@@ -84,7 +106,7 @@ class zone:
         return 1.273 * up_flow / self.pipeDiameter() ** 2  
 
     def pipeDiameter(self):
-        velocity = self.flowVelocity()
+        velocity = self.flowVelocityDown()
         volume = self.flowRateDown()
         return math.sqrt(1.273 * volume / velocity) 
     
@@ -98,7 +120,7 @@ class pipe:
         self.bends = bends
     
     def getFriction(self):
-        return self.pipe_fr
+        return self.friction
     
     def getDiameter(self):
         return self.diameter
@@ -108,6 +130,12 @@ class pipe:
 
     def getIsRaised(self):
         return self.is_raised
+
+    def setFriction(self,friction):
+        self.friction = friction
+
+    def setDiameter(self,diameter):
+        self.diameter = diameter
 
     def setLength(self,length):
         self.length = length
@@ -124,6 +152,11 @@ class pipe:
     def getBends(self):
         return self.bends
     
+    def roundDiameter(self,diameter,pipe_id):
+        for d in pipe_id:
+            if diameter <= d:   
+                return d
+    
     def frictionHeight(self, pipe_data, pipe_id, vel, length):
         D = self.zone.pipeDiameter()
         V = vel
@@ -131,32 +164,43 @@ class pipe:
         heights = [(x * (L * V ** 2) / (D * 2 * GRAVITY)) for x in pipe_data.keys()]
         
         indexD = pipe_id.index(D)
-        #costs = [cost[indexD] for cost in pipe_data.values()]
-        # for cost in pipe_data.values():                                                       
-        #     costs.append(cost[indexD])
+
         costs = []
-        for x in range(0, len(heights)):
-            y = heights[x]
-            area = self.zone.area
-            y += self.zone.wallHeight()
-            cost = (4 * math.sqrt(area)) * (30 + (y - 5) * (60 - 30)/(7.5 - 5 ))
-            areaNew = self.zone.volume() / y
-            cost += areaNew * self.zone.site_prep
-            cost += self.zone.pipe_length * pipe_data[x][indexD]
+        for x in range(0, len(heights)): #the jesus loop
+            height_wall = heights[x]
+            height_wall += self.zone.wallHeight()
+            height_tot = height_wall + self.zone.getZoneHeight()
+            area_new = self.zone.finalArea(height_tot, height_wall)
+            cost = self.zone.perimeter(area_new) * (30 + (height_wall - 5) * (60 - 30)/(7.5 - 5 ))
+            cost += area_new * self.zone.site_prep
+            cost += self.zone.getPipeLength() * pipe_data.get(pipe_data.keys()[x])[indexD]
             costs.append(cost)
-            # calculate change in costs per height and add table costs and then compare
-            
-""" compare = [(cost[x] * heights[x]) for x in range(0, len(heights))]
-        # for x in range(0, len(heights))
-        #     compare.append(cost[x] * heights[x])
+        
+        cost_min = sys.maxsize
+        index_low = -1
+        for cost in costs:
+            if cost < cost_min:
+                lowest = cost
+                index_low = costs.index(lowest)        
 
-        temp = compare.sort()
-
-        final_h = heights[compare.index(temp[0])]
-
+        final_h = heights[index_low]
         self.friction = final_h * (D * 2 * GRAVITY) / (L * V ** 2)
 
-        return final_h """    
+        return final_h
+        
+"""calculate change in costs per height and add table costs and then compare
+    
+compare = [(cost[x] * heights[x]) for x in range(0, len(heights))]
+# for x in range(0, len(heights))
+#     compare.append(cost[x] * heights[x])
+
+temp = compare.sort()
+
+final_h = heights[compare.index(temp[0])]
+
+self.friction = final_h * (D * 2 * GRAVITY) / (L * V ** 2)
+
+return final_h """    
         
                                             
     
@@ -166,14 +210,14 @@ class bend:
         self.bend_ang = bend_ang
         self.bend_coe = bend_coe
 
-    def getDepth(self):
-        return depth
+    def getBendNum(self):
+        return self.bend_num
 
     def getBendAng(self):        
-        return bend_ang
+        return self.bend_ang
 
     def getBendCoe(self):
-        return bend_coe       
+        return self.bend_coe       
 
     def bendLoss(self,vel,ang):
         for x in bend_data.keys():
@@ -201,13 +245,15 @@ class pump:
         
     def pumpFlow(self,vel):
         return 
+    
 
 
 class turbine:
-    def __init__(self,turbine_ef,pipe,elev):
+    def __init__(self,turbine_ef,pipe,elev,zone):
         self.efficiency = turbine_ef
         self.pipe = pipe
         self.elev = elev
+        self.zone = zone
 
     def getEfficiency(self):
         return self.efficiency
@@ -222,8 +268,14 @@ class turbine:
         EIn = (ENERGY_OUT) / n
         dE = EIn - (ENERGY_OUT)
         return dE / (GRAVITY * self.zone.mass())
-     
 
+    def turbineAnaly(self, turbine_data):
+        heights = []
+        for x in turbine_data.keys:
+            app = self.heightTurbine(x)
+            heights.append(app)                        
+        costs = []
+        #INSERT JESUS LOOP
 
 
 if __name__ == '__main__':
