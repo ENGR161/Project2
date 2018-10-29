@@ -12,7 +12,7 @@ def best_turb(turbine_data):
     for x ,y in turbine_data.items():
             turb_loss = ((1/x)-1)*ENERGY_OUT
             if tl > turb_loss:
-                tl = turbloss
+                tl = turb_loss
                 cost = turbine_data
 
 def best_zone():
@@ -52,8 +52,8 @@ class zone:
         return self.depth
 
 
-    def setStuff....
-
+    #def setStuff...
+        
     def mass(self):
         return ((4.32*10 ** 11) / (GRAVITY * self.z_height))
 
@@ -67,10 +67,11 @@ class zone:
 
     def idealResHeight(self):
         return self.wallHeight() + self.z_height
+    
     def finalResHeight(self,add_height):
-        return idealResHeight() + add_height
+        return self.idealResHeight() + add_height
 
-    def finalPipeLength(self):
+    #def finalPipeLength(self):
         #uses final res height to get additional pipe length and adds onto length_base
         
     def flowRateDown(self):
@@ -102,7 +103,7 @@ class pipe:
     def getDiameter(self):
         return self.diameter
     
-    def getLength():
+    def getLength(self):
         return self.length
 
     def getIsRaised(self):
@@ -110,9 +111,6 @@ class pipe:
 
     def setLength(self,length):
         self.length = length
-
-    def setIsRaised(self,is_raised):
-        self.is_raised = is_raised
 
     def setIsRaised(self,is_raised):
         self.is_raised = is_raised
@@ -136,16 +134,22 @@ class pipe:
         #     heights.append(effH)
         
         indexD = pipe_id.index(D)
-        costs = [cost[indexD] for cost in pipe_data.values()]
+        #costs = [cost[indexD] for cost in pipe_data.values()]
         # for cost in pipe_data.values():                                                       
         #     costs.append(cost[indexD])
-
-        for x in heights
-            x += self.zone.wallHeight()
-            cost = x *
+        costs = []
+        for x in range(0, len(heights)):
+            y = heights[x]
+            area = self.zone.area
+            y += self.zone.wallHeight()
+            cost = (4 * math.sqrt(area)) * (30 + (y - 5) * (60 - 30)/(7.5 - 5 ))
+            areaNew = self.zone.volume() / y
+            cost += areaNew * self.zone.site_prep
+            cost += self.zone.pipe_length * pipe_data[x][indexD]
+            costs.append(cost)
             # calculate change in costs per height and add table costs and then compare
             
-       """ compare = [(cost[x] * heights[x]) for x in range(0, len(heights))]
+""" compare = [(cost[x] * heights[x]) for x in range(0, len(heights))]
         # for x in range(0, len(heights))
         #     compare.append(cost[x] * heights[x])
 
@@ -175,9 +179,9 @@ class bend:
         return bend_coe       
 
     def bendLoss(self,vel,ang):
-        for x in bend_data.keys()
-            if ang == x
-            bcoe = bend_data[x][0]
+        for x in bend_data.keys():
+            if ang == x:
+                bcoe = bend_data[x][0]
         loss = bcoe * ((vel ** 2)/(2 * GRAVITY)) 
         return loss                 
 
@@ -221,8 +225,7 @@ class turbine:
         EIn = (ENERGY_OUT) / n
         dE = EIn - (ENERGY_OUT)
         return dE / (GRAVITY * self.zone.mass())
-    
-    def 
+     
 
 
 
@@ -247,12 +250,12 @@ if __name__ == '__main__':
     pipe_id = [.1,.25,.5, .75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3]
 
     bend_data = {
-        20: [.1,[1.00,1.49,4.93,14,32,62,107,169,252,359,492,654,849]],
-        30: [.15[1.05,1.57,5.17,15,34,65,112,178,265,377,516,687,892]],
-        45: [.2[1.10,1.64,5.43,16,36,69,118,187,278,396,542,721,936]],
-        60: [.22[1.16,1.73,5.70,16,38,72,124,196,292,415,569,757,983]],
-        75: [.27[1.22,1.81,5.99,17,39,76,130,206,307,436,598,795,1032]],
-        90: [.3[1.28,1.90,7,18,41,80,137,216,322,458,628,835,1084]]
+        20: [.1,1.00,1.49,4.93,14,32,62,107,169,252,359,492,654,849],
+        30: [.15,1.05,1.57,5.17,15,34,65,112,178,265,377,516,687,892],
+        45: [.2,1.10,1.64,5.43,16,36,69,118,187,278,396,542,721,936],
+        60: [.22,1.16,1.73,5.70,16,38,72,124,196,292,415,569,757,983],
+        75: [.27,1.22,1.81,5.99,17,39,76,130,206,307,436,598,795,1032],
+        90: [.3,1.28,1.90,7,18,41,80,137,216,322,458,628,835,1084]
     }
     bend_id = [.1,.25,.5]
 
