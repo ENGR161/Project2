@@ -43,10 +43,10 @@ class zone:
         self.z_height = zone_height
         self.pipe_length = pipe_l
         self.pipe_length_r = pipe_l_r
-        self.raise_cost
-        self.road_cost
+        self.raise_cost = raise_cost
+        self.road_cost = road_cost
         self.site_prep = site_prep
-        self.add_cost
+        self.add_cost = add_cost
     
     def getArea(self):
         return self.depth
