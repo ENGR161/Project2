@@ -66,8 +66,8 @@ class zone:
             return 4 * math.sqrt(area_new)
         elif num ==2:
             return (15/4) * math.sqrt((16*area)/math.sqrt(105))
-        else:
-            pass
+        else
+            return ((math.sqrt(area_new / math.pi)) * 2 * math.pi)
 
     def idealMass(self):
         return ((4.32*10 ** 11) / (GRAVITY * self.z_height))
@@ -243,7 +243,10 @@ class pump:
     def getElev(self):
         return self.elev
         
-    def pumpFlow(self,vel):
+    def pumpFlow(self,flow):
+        D = self.zone.pipeDiameter()
+        V = self.zone.flowVelocityUp(flow)
+
         return 
     
 
@@ -275,8 +278,25 @@ class turbine:
             app = self.heightTurbine(x)
             heights.append(app)                        
         costs = []
-        #INSERT JESUS LOOP
+       for x in range(0, len(heights)): #the jesus loop
+            height_wall = heights[x]
+            height_wall += self.zone.wallHeight()
+            height_tot = height_wall + self.zone.getZoneHeight()
+            area_new = self.zone.finalArea(height_tot, height_wall)
+            cost = self.zone.perimeter(area_new) * (30 + (height_wall - 5) * (60 - 30)/(7.5 - 5 ))
+            cost += area_new * self.zone.site_prep
+            cost += self.zone.getPipeLength() * pipe_data.get(pipe_data.keys()[x])[indexD]
+            costs.append(cost)
+        
+        cost_min = sys.maxsize
+        index_low = -1
+        for cost in costs:
+            if cost < cost_min:
+                lowest = cost
+                index_low = costs.index(lowest)        
 
+        final_h = heights[index_low]
+        return final_h
 
 if __name__ == '__main__':
     pump_data = {
