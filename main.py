@@ -39,7 +39,7 @@ def cost():
     pass
 
 class zone:
-    def __init__(self,num,area,zone_height,pipe_l,pipe_l_r,raise_cost,road_cost,site_prep,add_cost): 
+    def __init__(self,num,area,zone_height,pipe_l,pipe_l_r,raise_cost,road_cost,site_prep,tot_cost): 
         self.number = num
         self.idealArea = area
         self.z_height = zone_height
@@ -49,6 +49,28 @@ class zone:
         self.road_cost = road_cost
         self.site_prep = site_prep
         self.add_cost = add_cost
+        self.final_tot_height
+        self.add_height
+        self.tot_cost
+    
+    #getters
+    def getZoneNum(self):
+        return self.number
+
+    def getPipeLengthR(self):
+        return self.pipe_length_r
+
+    def getRaiseCost(self):
+        return self.raise_cost
+
+    def getRoadCost(self):
+        return self.road_cost                                                                
+
+    def getSitePrep(self):
+        return self.site_prep
+
+    def getAddCost(self):
+        return self.add_cost
     
     def getIdealArea(self):
         return self.idealArea
@@ -59,14 +81,30 @@ class zone:
     def getPipeLength(self):
         return self.pipe_length
 
-    #def setStuff...
+    def getAddHeight(self):
+        return self.addHeight
+
+    def getFinalTotalHeight(self):
+        return self.final_tot_height 
+
+    #setters
+
+    #calcs
+    def addTotalCost(self,costs):
+        self.tot_cost += cost for cost in costs
+
+    def addWallHeight(self,add):
+        self.add_height += add
+
+    def FinalTotalHeight(self):
+        self.final_tot_height = self.z_height + self.idealWallHeight() + self.addWallHeight
 
     def perimeter(self, area_new):
         if num == 1:
             return 4 * math.sqrt(area_new)
         elif num ==2:
             return (15/4) * math.sqrt((16*area)/math.sqrt(105))
-        else
+        else:
             return ((math.sqrt(area_new / math.pi)) * 2 * math.pi)
 
     def idealMass(self):
@@ -88,9 +126,6 @@ class zone:
 
     def finalArea(self,height_tot,height_wall):
         return self.finalVolume(height_tot) / height_wall
-    
-    def finalResHeight(self,add_height):
-        return self.idealResHeight() + add_height
 
     def finalPipeLength(self):
         #uses final res height to get additional pipe length and adds onto length_base
@@ -109,7 +144,7 @@ class zone:
         velocity = self.flowVelocityDown()
         volume = self.flowRateDown()
         return math.sqrt(1.273 * volume / velocity) 
-    
+                                 
     
 class pipe:
     def __init__(self, zone, pipe_l = 1, bends = []):
@@ -167,7 +202,7 @@ class pipe:
 
         costs = []
         for x in range(0, len(heights)): #the jesus loop
-            height_wall = heights[x]
+            height_wall = heights[x]     #created by Hackerman himself
             height_wall += self.zone.wallHeight()
             height_tot = height_wall + self.zone.getZoneHeight()
             area_new = self.zone.finalArea(height_tot, height_wall)
@@ -185,22 +220,22 @@ class pipe:
 
         final_h = heights[index_low]
         self.friction = final_h * (D * 2 * GRAVITY) / (L * V ** 2)
-
-        return final_h
+        self.zone.addHeight(final_h)
+        self.zone.addTotalCost([lowest])
         
 """calculate change in costs per height and add table costs and then compare
     
-compare = [(cost[x] * heights[x]) for x in range(0, len(heights))]
-# for x in range(0, len(heights))
-#     compare.append(cost[x] * heights[x])
+    compare = [(cost[x] * heights[x]) for x in range(0, len(heights))]
+    # for x in range(0, len(heights))
+    #     compare.append(cost[x] * heights[x])
 
-temp = compare.sort()
+    temp = compare.sort()
 
-final_h = heights[compare.index(temp[0])]
+    final_h = heights[compare.index(temp[0])]
 
-self.friction = final_h * (D * 2 * GRAVITY) / (L * V ** 2)
+    self.friction = final_h * (D * 2 * GRAVITY) / (L * V ** 2)
 
-return final_h """    
+    return final_h """    
         
                                             
     
@@ -272,20 +307,21 @@ class turbine:
         dE = EIn - (ENERGY_OUT)
         return dE / (GRAVITY * self.zone.mass())
 
-    def turbineAnaly(self, turbine_data):
+    def turbineCanal(self, turbine_data):
         heights = []
         for x in turbine_data.keys:
             app = self.heightTurbine(x)
             heights.append(app)                        
         costs = []
-       for x in range(0, len(heights)): #the jesus loop
-            height_wall = heights[x]
-            height_wall += self.zone.wallHeight()
+        indexD = turbine_epr.index(self.zone.heightish())                                            
+        for x in range(0, len(heights)): #the jesus loop (jesus owns the copyright)
+            height_wall = heights[x]     #Warning: The unauthorized reproduction or distribution of jesus' copyrighted work is illegal. Criminal copyright infringement, including infringement without monetary gain, is investigated by the FBI and is punishable by up to 5 years in federal prison and a fine of $250,000
+            height_wall += self.zone.wallHeight() #changed to running total height
             height_tot = height_wall + self.zone.getZoneHeight()
             area_new = self.zone.finalArea(height_tot, height_wall)
             cost = self.zone.perimeter(area_new) * (30 + (height_wall - 5) * (60 - 30)/(7.5 - 5 ))
             cost += area_new * self.zone.site_prep
-            cost += self.zone.getPipeLength() * pipe_data.get(pipe_data.keys()[x])[indexD]
+            cost += self.zone.flowRateDown() * pipe_data.get(turbine_data.keys()[x])[indexD]
             costs.append(cost)
         
         cost_min = sys.maxsize
@@ -296,7 +332,7 @@ class turbine:
                 index_low = costs.index(lowest)        
 
         final_h = heights[index_low]
-        return final_h
+        self.zone.addHeight(final_h)
 
 if __name__ == '__main__':
     pump_data = {
@@ -335,72 +371,6 @@ if __name__ == '__main__':
         .92: [622,684,753,828,911,1002,1102,1212,1333,1467,1614],
         .94: [746,821,903,994,1093,1202,1322,1455,1600,1760,1936]
     }
-    turbine_epr = [.1,.25,.5]
-
-    pipe_test = pipe()
+    turbine_epr = [20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]
 
     
-    
-
-    '''
-    pipe
-    bend1
-    bend2
-    bend3
-    bend4
-    turbine
-    pumphouse
-    road
-    site_prep
-    perimeter_qall
-    pipe_install_cost
-    raised_pipe_cost
-    other_costs
-    '''
-
-
-
-'''  <chat>
-- Cisco: scott found out the diameter for pipes is 0.5m for zone 1
-- Zach: okay sounds good, do you want me to factor that in?
-
-- Cisco: we can use this info to find the most ideal pipe for zone 1 
-- Zach: okay so are we sure then that the radius is set?? so the only factor is the friction coef?
-
-- Cisco: yes, we wil test it for each friction coefficient to find best efficiency v cost #
-- Zach: okay, so are we gonna have loop that find both the best cost and efficiency at the 
-same time (this would be kinds difficult), or should we go at it by finding the couple 
-best efficiencies and then find a good cost based on those or what???
-
-- Scott: this is scott, the cost is super easily calculated by hand, so we just need to find the efficiency based of
-that one long equation-- so we find the efficiency and costs and divide them to get 
-that comparison value we talked about. If you want to do it all in the program,
-the costs are in that array that cisco typed in. Yeah, I think we can find the best ratio
-for all the parts and then just use those? 
-Yeah
-
-- Zach: ohhhhhh, so we find the ratio for each and picj the best ratio then. Okay so
-then we can do 2 separeate loops. one for efficiency and one for cost. and we'll put those into arrays,
-and then create a new ratio array using those two. sound good?
-
-- Scott: yeah, but hold on. just fyi, the values in that grid array that cisco typed in are
-$ per m, so we need to mulitly all those cost values by the length, 67.08 m.
-So the cost loop will just be those dict values * the length, and the 
-efficiency loop will be that one long equation with v = 24.24, D = .5, l = 67.08,
-and f is the variable changed (the dict keys)
-
-If you really feel like it, you could generalize it so the v, d, and l are inputted
-/ calculated for each zone so that we could easily check this for each zone. That
-might be best. I can help code too rn if you need me too. Ok I'll work on the eff loop
-- Zach: yeah I am kinda caught up here but hopefully i am leaving very soon
-
-- Cisco: hey we found out our diameter thingy is wrong. its cisco again btw
-- Zach: 
-
-- Cisco: 
-- Zach: 
-
-- Cisco: 
-- Zach: 
-
-'''
