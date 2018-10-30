@@ -28,6 +28,7 @@ def filling(vel):
 
 #function that calculates the cost and efficiency of draining the reservoir
 def draining(vel):
+    
     pass
 
 #function that calculates the overall efficiency of the hydropump system
@@ -219,6 +220,7 @@ class pipe:
                 index_low = costs.index(lowest)        
 
         final_h = heights[index_low]
+        self.zone.addWallHeight(final_h)
         self.friction = final_h * (D * 2 * GRAVITY) / (L * V ** 2)
         self.zone.addHeight(final_h)
         self.zone.addTotalCost([lowest])
@@ -289,15 +291,14 @@ class turbine:
     def heightTurbine(self, n):
         EIn = (ENERGY_OUT) / n
         dE = EIn - (ENERGY_OUT)
-        return dE / (GRAVITY * self.zone.mass())
+        return (dE + self.zone.Energytemp) / (GRAVITY * self.zone.mass())
 
     def turbineCanal(self, turbine_data):
         heights = []
         for x in turbine_data.keys:
             app = self.heightTurbine(x)
             heights.append(app)                        
-        costs = []
-        indexD = turbine_epr.index(self.zone.heightish())                                            
+        costs = []                                           
         for x in range(0, len(heights)): #the jesus loop (jesus owns the copyright)
             height_wall = heights[x]     #Warning: The unauthorized reproduction or distribution of jesus' copyrighted work is illegal. Criminal copyright infringement, including infringement without monetary gain, is investigated by the FBI and is punishable by up to 5 years in federal prison and a fine of $250,000
             height_wall += self.zone.heightTemp() #changed to running total height
@@ -305,7 +306,12 @@ class turbine:
             area_new = self.zone.finalArea(height_tot, height_wall)
             cost = self.zone.perimeter(area_new) * (30 + (height_wall - 5) * (60 - 30)/(7.5 - 5 ))
             cost += area_new * self.zone.site_prep
-            cost += self.zone.flowRateDown() * #Height Down
+            for y in turbine_epr.keys:
+                if height_tot + 2 < y
+                    epr = y
+                    break
+                
+            cost += self.zone.flowRateDown() * epr
             costs.append(cost)
         
         cost_min = sys.maxsize
