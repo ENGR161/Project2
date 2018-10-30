@@ -223,22 +223,6 @@ class pipe:
         self.zone.addHeight(final_h)
         self.zone.addTotalCost([lowest])
         
-"""calculate change in costs per height and add table costs and then compare
-    
-    compare = [(cost[x] * heights[x]) for x in range(0, len(heights))]
-    # for x in range(0, len(heights))
-    #     compare.append(cost[x] * heights[x])
-
-    temp = compare.sort()
-
-    final_h = heights[compare.index(temp[0])]
-
-    self.friction = final_h * (D * 2 * GRAVITY) / (L * V ** 2)
-
-    return final_h """    
-        
-                                            
-    
 class bend:
     def __init__(self,bend_num, bend_ang,bend_coe):
         self.bend_num = bend_num
@@ -316,12 +300,12 @@ class turbine:
         indexD = turbine_epr.index(self.zone.heightish())                                            
         for x in range(0, len(heights)): #the jesus loop (jesus owns the copyright)
             height_wall = heights[x]     #Warning: The unauthorized reproduction or distribution of jesus' copyrighted work is illegal. Criminal copyright infringement, including infringement without monetary gain, is investigated by the FBI and is punishable by up to 5 years in federal prison and a fine of $250,000
-            height_wall += self.zone.wallHeight() #changed to running total height
+            height_wall += self.zone.heightTemp() #changed to running total height
             height_tot = height_wall + self.zone.getZoneHeight()
             area_new = self.zone.finalArea(height_tot, height_wall)
             cost = self.zone.perimeter(area_new) * (30 + (height_wall - 5) * (60 - 30)/(7.5 - 5 ))
             cost += area_new * self.zone.site_prep
-            cost += self.zone.flowRateDown() * pipe_data.get(turbine_data.keys()[x])[indexD]
+            cost += self.zone.flowRateDown() * #Height Down
             costs.append(cost)
         
         cost_min = sys.maxsize
