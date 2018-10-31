@@ -9,18 +9,18 @@ GPIPE_COST = 500         #$/pipe
 
  
 def best_turb(turbine_data):
-    tl = 10000000000000
-    for x ,y in turbine_data.items():
-            turb_loss = ((1/x)-1)*ENERGY_OUT
-            if tl > turb_loss:
-                tl = turb_loss
-                cost = turbine_data
+    # tl = 10000000000000
+    # for x ,y in turbine_data.items():
+    #         turb_loss = ((1/x)-1)*ENERGY_OUT
+    #         if tl > turb_loss:
+    #             tl = turb_loss
+    #             cost = turbine_data
 
 def best_zone():
-    zones = []
-    zones.append(zone(100000,None,None,None,1))
-    zones.append(zone(100000,None,None,None,1))
-    zones.append(zone(100000,None,None,None,1))
+    # zones = []
+    # zones.append(zone(100000,None,None,None,1))
+    # zones.append(zone(100000,None,None,None,1))
+    # zones.append(zone(100000,None,None,None,1))
 
 #function that calculates the cost and efficiency of filling the reservoir
 def filling(vel):
@@ -40,9 +40,8 @@ def cost():
     pass
 
 class zone:
-    def __init__(self,num,area,zone_height, ideal_wall_height, pipe_l,pipe_l_r,raise_cost,road_cost,site_prep,tot_cost = 0): 
+    def __init__(self,num,zone_height, ideal_wall_height, pipe_l,pipe_l_r,raise_cost,road_cost,site_prep,tot_cost = 0,add_cost=0): 
         self.num = num
-        self.idealArea = area
         self.z_height = zone_height
         self.pipe_length = pipe_l
         self.pipe_length_r = pipe_l_r
@@ -50,8 +49,8 @@ class zone:
         self.road_cost = road_cost
         self.site_prep = site_prep
         self.add_height = ideal_wall_height
-        self.add_cost
-        self.tot_cost
+        self.add_cost = add_cost
+        self.tot_cost = tot_cost
         self.final_tot_height
     
     #getters
@@ -72,9 +71,6 @@ class zone:
 
     def getAddCost(self):
         return self.add_cost
-    
-    def getIdealArea(self):
-        return self.idealArea
 
     def getZoneHeight(self):
         return self.z_height
@@ -83,7 +79,7 @@ class zone:
         return self.pipe_length
 
     def getAddHeight(self):
-        return self.addHeight
+        return self.add_height
 
     def getTotalCost(self):
         return self.tot_cost
@@ -93,17 +89,12 @@ class zone:
 
     #setters
 
-    def setTotalCost(self,tot_cost):
-        self.tot_cost = tot_cost
+    
 
     #calcs
     def addTotalCost(self,costs):
         for cost in costs:
-<<<<<<< HEAD
             self.tot_cost += cost
-=======
-            self.tot_cost += cost 
->>>>>>> 4a10c229ad98355152d9ced77252044886e93943
 
     def addWallHeight(self,add):
         self.add_height += add
@@ -277,12 +268,12 @@ class pump:
     def getElev(self):
         return self.elev
         
-    def pumpFlow(self,flow):
+    def pumpFlow(self,n):
         D = self.zone.pipeDiameter()
         V = self.zone.flowVelocityUp(flow)
         EOut = EIn / n                
         flowUp = EOut / (GRAVITY / self.zone.add_height / 1000)
-    
+        volume = time * flowUp
 
 
 class turbine:
@@ -311,7 +302,7 @@ class turbine:
             if epr <= pipe_id[e]:   
                 return e
 
-    def turbineCanal(self, turbine_data, turbine_epr):
+    def turbineLoss(self, turbine_data, turbine_epr):
         # heights = []
         # for x in turbine_data.keys():
         #     app = self.heightTurbine(x)
