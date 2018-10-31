@@ -40,8 +40,8 @@ def cost():
     pass
 
 class zone:
-    def __init__(self,num,area,zone_height,pipe_l,pipe_l_r,raise_cost,road_cost,site_prep,tot_cost): 
-        self.number = num
+    def __init__(self,num,area,zone_height, ideal_wall_height, pipe_l,pipe_l_r,raise_cost,road_cost,site_prep,tot_cost = 0): 
+        self.num = num
         self.idealArea = area
         self.z_height = zone_height
         self.pipe_length = pipe_l
@@ -49,14 +49,14 @@ class zone:
         self.raise_cost = raise_cost
         self.road_cost = road_cost
         self.site_prep = site_prep
-        self.add_cost = add_cost
-        self.final_tot_height
-        self.add_height
+        self.add_height = ideal_wall_height
+        self.add_cost
         self.tot_cost
+        self.final_tot_height
     
     #getters
     def getZoneNum(self):
-        return self.number
+        return self.num
 
     def getPipeLengthR(self):
         return self.pipe_length_r
@@ -85,31 +85,38 @@ class zone:
     def getAddHeight(self):
         return self.addHeight
 
+    def getTotalCost(self):
+        return self.tot_cost
+
     def getFinalTotalHeight(self):
         return self.final_tot_height 
 
     #setters
 
+    def setTotalCost(self,tot_cost):
+        self.tot_cost = tot_cost
+
     #calcs
     def addTotalCost(self,costs):
-        self.tot_cost += cost for cost in costs
+        for cost in costs:
+            self.tot_cost += cost
 
     def addWallHeight(self,add):
         self.add_height += add
 
     def FinalTotalHeight(self):
-        self.final_tot_height = self.z_height + self.idealWallHeight() + self.addWallHeight
+        self.final_tot_height = self.z_height + self.idealWallHeight() + self.add_height
 
     def perimeter(self, area_new):
-        if num == 1:
+        if self.num == 1:
             return 4 * math.sqrt(area_new)
-        elif num ==2:
-            return (15/4) * math.sqrt((16*area)/math.sqrt(105))
+        elif self.num ==2:
+            return (15/4) * math.sqrt((16*area_new)/math.sqrt(105))
         else:
             return ((math.sqrt(area_new / math.pi)) * 2 * math.pi)
 
     def idealMass(self):
-        return ((4.32*10 ** 11) / (GRAVITY * self.z_height))
+        return ((4.32*10 ** 11) / (GRAVITY * (self.z_height + (.5 * self.add_height))))
 
     def idealVolume(self):
         return self.idealMass() / 1000
@@ -189,8 +196,8 @@ class pipe:
         return self.bends
     
     def roundDiameter(self,diameter,pipe_id):
-        for d in pipe_id:
-            if diameter <= d:   
+        for d in range(len(pipe_id)):
+            if diameter <= pipe_id[d]:   
                 return d
     
     def frictionHeight(self, pipe_data, pipe_id, vel, length):
@@ -199,13 +206,13 @@ class pipe:
         L = length
         heights = [(x * (L * V ** 2) / (D * 2 * GRAVITY)) for x in pipe_data.keys()]
         
-        indexD = pipe_id.index(D)
+        indexD = self.roundDiameter(D,pipe_id)
 
         costs = []
         for x in range(0, len(heights)): #the jesus loop
             height_wall = heights[x]     #created by Hackerman himself
-            height_wall += self.zone.wallHeight()
-            height_tot = height_wall + self.zone.getZoneHeight()
+            height_wall += self.zone.getAddHeight()
+            height_tot = height_wall / 2 + self.zone.getZoneHeight()
             area_new = self.zone.finalArea(height_tot, height_wall)
             cost = self.zone.perimeter(area_new) * (30 + (height_wall - 5) * (60 - 30)/(7.5 - 5 ))
             cost += area_new * self.zone.site_prep
@@ -222,14 +229,14 @@ class pipe:
         final_h = heights[index_low]
         self.zone.addWallHeight(final_h)
         self.friction = final_h * (D * 2 * GRAVITY) / (L * V ** 2)
-        self.zone.addHeight(final_h)
         self.zone.addTotalCost([lowest])
         
 class bend:
-    def __init__(self,bend_num, bend_ang,bend_coe):
+    def __init__(self,zone, bend_num, bend_ang,bend_coe):
         self.bend_num = bend_num
         self.bend_ang = bend_ang
         self.bend_coe = bend_coe
+        self.zone = zone
 
     def getBendNum(self):
         return self.bend_num
@@ -244,16 +251,18 @@ class bend:
         for x in bend_data.keys():
             if ang == x:
                 bcoe = bend_data[x][0]
-        loss = bcoe * ((vel ** 2)/(2 * GRAVITY)) 
+        loss = bcoe * ((vel ** 2)/(2 * GRAVITY))
+        self.zone.addWallHeight(loss) 
         return loss                 
 
 
 
 class pump:
-    def __init__(self,pump_ef,pipe,elev):
+    def __init__(self,zone,pump_ef,pipe,elev):
         self.efficiency = pump_ef
         self.pipe = pipe
         self.elev = elev
+        self.zone = zone
     
     def getEfficiency(self):
         return self.efficiency  
@@ -267,13 +276,13 @@ class pump:
     def pumpFlow(self,flow):
         D = self.zone.pipeDiameter()
         V = self.zone.flowVelocityUp(flow)
-
-        return 
+        EOut = EIn / n                
+        flowUp = EOut / (GRAVITY / self.zone.add_height / 1000)
     
 
 
 class turbine:
-    def __init__(self,turbine_ef,pipe,elev,zone):
+    def __init__(self,zone,turbine_ef,pipe,elev):
         self.efficiency = turbine_ef
         self.pipe = pipe
         self.elev = elev
@@ -291,27 +300,33 @@ class turbine:
     def heightTurbine(self, n):
         EIn = (ENERGY_OUT) / n
         dE = EIn - (ENERGY_OUT)
-        return (dE + self.zone.Energytemp) / (GRAVITY * self.zone.mass())
+        return (dE) / (GRAVITY * self.zone.mass())
 
-    def turbineCanal(self, turbine_data):
-        heights = []
-        for x in turbine_data.keys:
-            app = self.heightTurbine(x)
-            heights.append(app)                        
-        costs = []                                           
-        for x in range(0, len(heights)): #the jesus loop (jesus owns the copyright)
-            height_wall = heights[x]     #Warning: The unauthorized reproduction or distribution of jesus' copyrighted work is illegal. Criminal copyright infringement, including infringement without monetary gain, is investigated by the FBI and is punishable by up to 5 years in federal prison and a fine of $250,000
-            height_wall += self.zone.add_height #changed to running total height
-            height_tot = height_wall + self.zone.getZoneHeight()
+    def roundEPR(self,epr,turbine_epr):
+        for e in range(len(turbine_epr)):
+            if epr <= pipe_id[e]:   
+                return e
+
+    def turbineCanal(self, turbine_data, turbine_epr):
+        # heights = []
+        # for x in turbine_data.keys():
+        #     app = self.heightTurbine(x)
+        #     heights.append(app) 
+        heights = [self.heightTurbine(x) for x in turbine_data.keys()]
+
+        costs = []
+
+        for x in range(0, len(heights)): #the jesus loop 
+            height_wall = heights[x]     
+            height_wall += self.zone.getAddHeight() #changed to running total height
+            height_tot = height_wall / 2 + self.zone.getZoneHeight()
             area_new = self.zone.finalArea(height_tot, height_wall)
             cost = self.zone.perimeter(area_new) * (30 + (height_wall - 5) * (60 - 30)/(7.5 - 5 ))
             cost += area_new * self.zone.site_prep
-            for y in turbine_epr.keys:
-                if height_tot + 2 < y
-                    epr = y
-                    break
-                
-            cost += self.zone.flowRateDown() * epr
+
+            index = self.roundEPR(height_tot,turbine_epr)
+
+            cost += self.zone.flowRateDown() * turbine_data.get(turbine_data.keys()[x])[index] #flow rate x unit cost at epr and height
             costs.append(cost)
         
         cost_min = sys.maxsize
@@ -322,7 +337,8 @@ class turbine:
                 index_low = costs.index(lowest)        
 
         final_h = heights[index_low]
-        self.zone.addHeight(final_h)
+        self.zone.addWallHeight(final_h)
+        self.zone.addTotalCost([lowest])
 
 if __name__ == '__main__':
     pump_data = {
@@ -363,4 +379,6 @@ if __name__ == '__main__':
     }
     turbine_epr = [20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]
 
-    
+
+    #zone 1 bends: 30 deg
+    #zone 2 bends: 60 deg 
