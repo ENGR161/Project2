@@ -99,7 +99,11 @@ class zone:
     #calcs
     def addTotalCost(self,costs):
         for cost in costs:
+<<<<<<< HEAD
             self.tot_cost += cost
+=======
+            self.tot_cost += cost 
+>>>>>>> 4a10c229ad98355152d9ced77252044886e93943
 
     def addWallHeight(self,add):
         self.add_height += add
