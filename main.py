@@ -301,7 +301,7 @@ class turbine:
         costs = []                                           
         for x in range(0, len(heights)): #the jesus loop (jesus owns the copyright)
             height_wall = heights[x]     #Warning: The unauthorized reproduction or distribution of jesus' copyrighted work is illegal. Criminal copyright infringement, including infringement without monetary gain, is investigated by the FBI and is punishable by up to 5 years in federal prison and a fine of $250,000
-            height_wall += self.zone.heightTemp() #changed to running total height
+            height_wall += self.zone.add_height #changed to running total height
             height_tot = height_wall + self.zone.getZoneHeight()
             area_new = self.zone.finalArea(height_tot, height_wall)
             cost = self.zone.perimeter(area_new) * (30 + (height_wall - 5) * (60 - 30)/(7.5 - 5 ))
