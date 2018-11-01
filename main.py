@@ -40,7 +40,7 @@ def total_cost(zone):
 
 #A zone object represents one of the three water hydro storage zones
 class zone:
-    def __init__(self,num,zone_height, ideal_wall_height, ideal_area, pipe_l,pipe_l_r,raise_cost,additional_costs,site_prep,tot_cost = 0,add_cost=0): 
+    def __init__(self,num,zone_height, ideal_wall_height, ideal_area,raise_cost,additional_costs,site_prep,pipe_l = 0,pipe_l_r = 0, tot_cost = 0,add_cost=0): 
         self.num = num
         self.z_height = zone_height
         self.pipe_length = pipe_l
@@ -230,7 +230,7 @@ class pipe:
             height_wall += self.zone.getAddHeight()   #update height with current height of wall
             height_tot = height_wall / 2 + self.zone.getZoneHeight()  #effective height (h in mgh) for the water --> base zone height + 1/2 of the wall height
             area_new = self.zone.finalArea(height_tot, height_wall)   #calculates the new area of zone based on new wall height and effective water height  
-            cost = self.zone.perimeter(area_new) * (30 + (height_wall - 5) * (60 - 30)/(7.5 - 5 )) #cost due to the new height of the wall (perimeter)
+            cost = self.zone.perimeter(area_new) * (30 + (height_wall - 5) * (60 - 30)/(7.5 - 5)) #cost due to the new height of the wall (perimeter)
             cost += area_new * self.zone.getSitePrep()                                                 #adding cost to clear land based on clearing
             cost += self.zone.getPipeLength() * pipe_data.get(pipe_data.keys()[x])[indexD]         #cost of all the pipes
             costs.append(cost)                                                                     #append the cost to the parallel list
@@ -249,9 +249,9 @@ class pipe:
         
         
 class bend:
-    def __init__(self,zone, bend_num, bend_ang,bend_coe):
+    def __init__(self,zone, bend_num, bend_angs,bend_coe):
         self.bend_num = bend_num
-        self.bend_ang = bend_ang
+        self.bend_angs = bend_angs
         self.bend_coe = bend_coe
         self.zone = zone
 
@@ -262,25 +262,17 @@ class bend:
         return self.bend_ang
 
     def getBendCoe(self):
-        return self.bend_coe  
+        return self.bend_coe       
 
-    def bendLossUp(self,volume, time,ang,bend_data,bend_id):       # takes in a bend angle and velocity and calculates energy lost
-        for x in bend_data.keys():    
-            if ang == x:
-                bcoe = bend_data.get(x)[0]
-        loss = bcoe * ((vel ** 2)/(2 * GRAVITY))     
+    def bendLoss(self,vel,bend_data,bend_id):       # takes in a bend angle and velocity and calculates energy lost
+        losses = 0
+        for raised in bend_angs.get(self.zone.getZoneNum()):
+            if (raised[0] and self.zone.getPipeLength != 0):
+                
 
-    def lossB(ang):
-        self.bends =
-        loss_b = 0
-        for bend in self.bends:
-            loss_b += bend.bendLossUp(self.zone.flowVelocityUp((volume / time)),angl,bend_data,bend_id)        
-        return loss_b
-
-    def bendLossDown(self,vel,ang,bend_data,bend_id):       # takes in a bend angle and velocity and calculates energy lost
-        for x in bend_data.keys():    
-            if ang == x:
-                bcoe = bend_data.get(x)[0]
+            for x in bend_data.keys():                
+                if ang == x:
+                    bcoe = bend_data.get(x)[0]
 
         loss = bcoe * ((vel ** 2)/(2 * GRAVITY))
 
@@ -317,8 +309,8 @@ class bend:
 
         final_h = heights[index_low]
         self.zone.addWallHeight(final_h)
-        self.zone.addTotalCost(self.zone.flowRateDown() * turbine_data.get(
-            turbine_data.keys()[self.roundEPR((final_h / 2 + height_wall / 2 + self.zone.getZoneHeight(),turbine_epr)][index_low])
+        #FIX THIS
+        #self.zone.addTotalCost(self.zone.flowRateDown() * turbine_data.get(turbine_data.keys()[self.roundEPR((final_h / 2 + height_wall / 2 + self.zone.getZoneHeight(),turbine_epr)][index_low])))
                 
 
     
@@ -330,7 +322,17 @@ class pump:
         self.elev = elev
         self.zone = zone
         self.bends = bends
-    
+        
+    def bendLoss(self,vel,bend_data,bend_id):       # takes in a bend angle and velocity and calculates energy lost
+        losses = 0
+        for ang in bend_angs.get(self.zone.getZoneNum())
+            for x in bend_data.keys():                
+                if ang == x:
+                    bcoe = bend_data.get(x)[0]
+
+        loss = bcoe * ((vel ** 2)/(2 * GRAVITY))
+
+        return loss
     def getEfficiency(self):
         return self.efficiency  
     
@@ -371,7 +373,8 @@ class pump:
             area_new = self.zone.finalArea(height_tot, height_wall)
             cost = self.zone.perimeter(area_new) * (30 + (height_wall - 5) * (60 - 30)/(7.5 - 5 ))
             cost += area_new * self.zone.getSitePrep()
-            #pass in loss_b
+            velocity = self.zone.flowVelocityUp(volume/ time)
+            loss_b = self.bendLoss(velocity, bend_data, bend_id)
             height_tot += loss_b
             index = self.roundEPR(height_tot,pump_epr)
 
@@ -387,7 +390,8 @@ class pump:
                 break    
 
         final_h = heights[index_low]
-        self.zone.addTotalCost(self.zone.flowRateDown() * pump_data.get(pump_data.keys()[self.roundEPR((final_h / 2 + height_wall / 2 + self.zone.getZoneHeight(),pump_epr)][index_low])
+        #FIX THIS
+        #self.zone.addTotalCost(self.zone.flowRateDown() * pump_data.get(pump_data.keys()[self.roundEPR((final_h / 2 + height_wall / 2 + self.zone.getZoneHeight(),pump_epr)][index_low])
         self.zone.addTotalCost()
         
 
@@ -480,7 +484,13 @@ if __name__ == '__main__':
         75: [.27,[1.22,1.81,5.99,17,39,76,130,206,307,436,598,795,1032]],
         90: [.3,[1.28,1.90,7,18,41,80,137,216,322,458,628,835,1084]]
     }
-    bend_id = [.1,.25,.5]
+    bend_id = [.1,.25,.5,.75,1,1.25,1.5,1.75,2,2.25,2.5,2.75,3]
+
+    zone_bends = {
+        '1': [False,[30,30]],
+        '2': [[False,[60,60]],[True,[45,45]]],
+        '3': [[False,[20,45,45]],[True,[35.5,35.5]]]
+    }
 
     turbine_data = {
         .83: [360,396,436,479,527,580,638,702,772,849,934],
@@ -490,6 +500,8 @@ if __name__ == '__main__':
         .94: [746,821,903,994,1093,1202,1322,1455,1600,1760,1936]
     }
     turbine_epr = [20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]
+
+
 
 
     #zone 1 bends: 30 deg
