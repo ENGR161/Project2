@@ -12,7 +12,7 @@
 # shaseman
 # Section: 1
 # Team: 15
-#
+# 
 # ELECTRONIC SIGNATURE
 # Zachary Ghera
 # Francisco Rivera
@@ -36,29 +36,44 @@ PHOUSE_COST = 100000     #$
 GPIPE_COST = 500         #$/pipe
 TOTAL_ENERGY = (4.32 * 10 ** 11)
 
-def output():
-    print("Most cost efficient system parameters for zone", zoneNum)
-    print("Diameter of pipe:", diameter, "m")
-    print("Volume of flow:", flow, "m^3/s")                            
-    print("Most efficient pump efficiency coefficient:")
-
-
+#takes the optimized values and outputs them based on the zone
+def output(cost,eff,zone,time):  
+    if zone.num == 1:
+        length = (math.sqrt(2) * zone.getAddHeight())                                    
+    elif zone.num ==2:
+        length = (zone.getAddHeight() / math.sin(math.pi / 9))
+    else:
+        length = (math.sqrt(2) * zone.getAddHeight())  
+    length += zone.pipe_length + zone.pipe_length_r    
+    
+    print("Most cost efficient system parameters for zone", zone.getZoneNum())
+    print("Diameter of pipe:", zone.getPipeD(), "m")
+    print("Volumetric flow rate up:", zone.flowRateDown(), "m^3/s")      
+    print("Volumetric flow rate up:", zone.finalVolume((zone.getAddHeight() / 2) + zone.getZoneHeight()) / time, "m^3/s")                       
+    print("Pump efficiency coefficient:", zone.getPumpEff())
+    print("Turbine efficiency coefficient:", zone.getTurbEff())
+    print("Friction factor for pipes:", zone.getPipeFric())                                    
+    print("Height of reservoir", zone.getAddHeight(), "m") 
+    print("Final Pipe Length: ",length,"m")
+    print("Efficiency of System: ", eff) 
+    print("Total cost of the system: $", round(cost,2))    
+    print("\n\n")                                    
             
 #function that calculates the overall cost of the hydropump system
 def total_cost(zone):   
-    height_wall = self.zone.getAddHeight() #changed to running total height
-    height_tot = height_wall / 2 + self.zone.getZoneHeight()
-    area_new = self.zone.finalArea(height_tot, height_wall)
+    height_wall = zone.getAddHeight() #changed to running total height
+    height_tot = height_wall / 2 + zone.getZoneHeight()
+    area_new = zone.finalArea(height_tot, height_wall)
 
-    cost = self.zone.getTotalCost() + self.zone.getRaiseCost() + self.zone.getAdditionalCosts(area_new) 
-    cost += self.zone.perimeter(area_new) * (30 + (height_wall - 5) * (60 - 30)/(7.5 - 5 ))
-    cost += area_new * self.zone.getSitePrep
+    cost = zone.getTotalCost() + zone.getRaiseCost() + zone.getAdditionalCosts(area_new) 
+    cost += zone.perimeter(area_new) * (30 + (height_wall - 5) * (60 - 30)/(7.5 - 5 ))
+    cost += area_new * zone.getSitePrep()
 
     return cost
  
 #function that calculates the cost and efficiency of filling the reservoir
-def filling(time,zone,pump,bends,pump_data,pump_epr):
-    pump.upFriction(time,pump_data,pump_epr,bend_data,bend_id)
+def filling(time,zone,pump,bends,pump_data,pump_epr,bend_data,bend_id,bend_angs):
+    pump.upFriction(time,pump_data,pump_epr,bend_data,bend_id,bend_angs)
 
 #function that calculates the cost and efficiency of draining the reservoir
 def draining(time,zone,bends,pipe,turbine,pump,pipe_data,pipe_id,bend_data,bend_id,turbine_data,turbine_epr):
@@ -68,8 +83,8 @@ def draining(time,zone,bends,pipe,turbine,pump,pipe_data,pipe_id,bend_data,bend_
 
 #12 hours is 43,200 seconds
 #function that calculates the overall efficiency of the hydropump system
-def efficiency(zone_num, isRaised, fill_time): #fill_time in hours
-    fill_time *= 3600 #converts hours to seconds
+def efficiency(zone_num, isRaised, time): #fill_time in hours
+    time *= 3600 #converts hours to seconds
     pump_data = {
         .8: [200,220,242,266,293,322,354,390,429,472,519],
         .83: [240,264,290,319,351,387,425,468,514,566,622],
@@ -99,8 +114,8 @@ def efficiency(zone_num, isRaised, fill_time): #fill_time in hours
     }
     bend_id = [.1,.25,.5,.75,1,1.25,1.5,1.75,2,2.25,2.5,2.75,3]
 
-    zone_bends = {
-        1: [False,[30,30]],
+    bend_angs = {
+        1: [[False,[30,30]]],
         2: [[False,[60,60]],[True,[45,45]]],
         3: [[False,[20,45,45]],[True,[37.5,37.5]]]
     }
@@ -114,6 +129,7 @@ def efficiency(zone_num, isRaised, fill_time): #fill_time in hours
     }
     turbine_epr = [20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]
 
+    # inserts ideal values for select variables depending on zone
     if zone_num == 1:
         z_height = 30 
         ideal_w_h = 5 
@@ -149,36 +165,40 @@ def efficiency(zone_num, isRaised, fill_time): #fill_time in hours
             pipe_l = 114.554
         
     zone = Zone(zone_num,z_height,ideal_w_h,ideal_area,raise_cost,site_prep,pipe_l,pipe_l_r)
+    # Sets the angles for the bends depending on which zone is chosen
 
-    if zone_num == 1:
-        angs = [30,30]
-    elif zone_num == 2:
-        if (isRaised):
-            angs = [45,45]
-        else:
-            angs = [60,60]
-    else: 
-        if (isRaised):
-            angs = [37.5,37.5]
-        else:
-            angs = [20,45,45]     
+    # if zone_num == 1:
+    #     angs = [30,30]
+    # elif zone_num == 2:
+    #     if (isRaised):
+    #         angs = [45,45]
+    #     else:
+    #         angs = [60,60]
+    # else: 
+    #     if (isRaised):
+    #         angs = [37.5,37.5]
+    #     else:
+    #         angs = [20,45,45]     
 
-    bends = Bend(zone,angs)
-    pipe = Pipe(zone,pipe_l,pipe_l_r,bends)
+    pipe = Pipe(zone,pipe_l,pipe_l_r,bend_angs)
+    bends = Bend(zone,bend_angs, pipe)
     turbine = Turbine(zone,pipe)
-    pump = Pump(zone,pipe,bends)
+    pump = Pump(zone,pipe,bend_angs)
 
     draining(time,zone,bends,pipe,turbine,pump,pipe_data,pipe_id,bend_data,bend_id,turbine_data,turbine_epr)
-    filling(time,zone,pump,bends,pump_data,pump_epr,bend_data,bend_id,bend_data,bend_id)
+    filling(time,zone,pump,bends,pump_data,pump_epr,bend_data,bend_id,bend_angs)
     
-    total_cost(zone)                                                                                                                                
-    eff = self.zone.efficiencyCalc()
+    cost = total_cost(zone)                                                                                                                                
+    eff_final = zone.efficiencyCalc()
+
+    output(cost,eff_final,zone, time)
+
 
     
 
 #A zone object represents one of the three water hydro storage zones
 class Zone:
-    def __init__(self,num,zone_height, ideal_wall_height, ideal_area,raise_cost,site_prep,pipe_l,pipe_l_r, tot_cost = 0,add_cost=0): 
+    def __init__(self,num,zone_height, ideal_wall_height, ideal_area,raise_cost,site_prep,pipe_l,pipe_l_r): 
         self.num = num
         self.z_height = zone_height
         self.pipe_length = pipe_l
@@ -186,12 +206,16 @@ class Zone:
         self.raise_cost = raise_cost
         self.site_prep = site_prep
         self.add_height = ideal_wall_height
+        self.ideal_wall_height = ideal_wall_height
         self.ideal_area = ideal_area
-        self.add_cost = add_cost
-        self.tot_cost = tot_cost
-        self.final_tot_height
-        self.final_area
-        self.pipe_box
+        self.add_cost = 0
+        self.tot_cost = 0
+        self.pipe_box = 0
+        self.pump_eff = 0
+        self.turb_eff = 0
+        self.pipe_fric = 0
+        self.pipe_D = 0
+                    
     #getters
     def getZoneNum(self):
         return self.num
@@ -199,9 +223,21 @@ class Zone:
     def getPipeLength(self):
         return self.pipe_length
 
+    def getTurbEff(self):
+        return self.turb_eff
+    
     def getPipeLengthR(self):
         return self.pipe_length_r
 
+    def getPumpEff(self):
+        return self.pump_eff
+
+    def getPipeFric(self):
+        return self.pipe_fric
+
+    def getPipeD(self):
+        return self.pipe_D
+        
     def getAddCost(self):
         return self.add_cost
 
@@ -220,30 +256,38 @@ class Zone:
     def getSitePrep(self):
         return self.site_prep
 
+    def setPumpEff(self, eff):
+        self.pump_eff = eff
+
+    def setTurbEff(self, turb):
+        self.turb_eff = turb
+
+    def setPipeFric(self, pipe):
+        self.pipe_fric = pipe
+
+    def setD(self, D):
+        self.pipe_D = D
+                            
+    # takes in an area and calculates fixed costs plus costs for branching pipes
     def getAdditionalCosts(self,area):
         costs = 0
         if self.num == 1:
             costs = 148000
-            costs += (self.getPipeBox) * (math.sqrt(2) * self.getAddHeight)                                    
+            costs += (self.getPipeBox()) * (math.sqrt(2) * self.getAddHeight())                                    
         elif self.num ==2:
             costs = 202000
-            costs += (self.getPipeBox) * (self.getAddHeight / math.sin(math.pi / 9))
+            costs += (self.getPipeBox()) * (self.getAddHeight() / math.sin(math.pi / 9))
         else:
             costs = 150000 + area * .12
-            costs += (self.getPipeBox) * (math.sqrt(2) * self.getAddHeight)
+            costs += (self.getPipeBox()) * (math.sqrt(2) * self.getAddHeight())
         
         return costs 
-    def getTotalArea(self):
-        return self.final_area
 
     def getPipeBox(self):
         return self.pipe_box            
 
     def getTotalCost(self):
         return self.tot_cost
-
-    def getFinalTotalHeight(self):
-        return self.final_tot_height 
 
     #setters
     def setPipeBox(self,cost):
@@ -259,9 +303,6 @@ class Zone:
     def getfinalArea(self,area):
         self.final_area = area
 
-    def finalTotalHeight(self):
-        self.final_tot_height = self.z_height + self.getAddHeight()
-
     #return the perimeter of the zone based on the new area of the system with energy losses
     def perimeter(self, area_new):
         if self.num == 1:
@@ -273,7 +314,7 @@ class Zone:
 
     #calculates ideal mass of system
     def idealMass(self):
-        return ((4.32*10 ** 11) / (GRAVITY * (self.z_height + (.5 * self.add_height)))) 
+        return ((4.32*10 ** 11) / (GRAVITY * (self.z_height + (.5 * self.ideal_wall_height)))) 
 
     #calculates ideal mass based off of ideal volume
     def idealVolume(self):
@@ -300,30 +341,34 @@ class Zone:
         pass
         
     def flowRateDown(self):
-        return (ENERGY_OUT) / (GRAVITY / (self.add_height + self.z_height) / 1000)
+        return (ENERGY_OUT) / GRAVITY / (self.add_height + self.z_height) / 1000
 
     def flowVelocityDown(self):
         return math.sqrt(2 * GRAVITY * (self.add_height + self.z_height))
     
-    def flowVelocityUp(self, up_flow): #Calculates the velocity of the water when being pumped to the reservoir
+    #Calculates the velocity of the water when being pumped to the reservoir
+    def flowVelocityUp(self, up_flow): 
         return 1.273 * up_flow / self.pipeDiameter() ** 2  
 
-    def pipeDiameter(self): # Calculates the ideal pipe diameter based on flow rate and velocity
-        velocity = self.flowVelocityDown()
-        volume = self.flowRateDown()
+    # Calculates the ideal pipe diameter based on flow rate and velocity
+    def pipeDiameter(self): 
+        velocity = self.flowVelocityDown() #26.19
+        volume = self.flowRateDown() #29
         return math.sqrt(1.273 * volume / velocity)
+
     def efficiencyCalc(self):
-        heightIdeal = self.idealResHeight
-        heightActual = self.getAddHeight() + self.getZoneHeight
+        heightIdeal = self.idealResHeight()
+        heightActual = self.getAddHeight() + self.getZoneHeight()
         return heightIdeal / heightActual                             
 
+# The pipe object represents a pipe in a specific zone with given lengths, diameter 
 class Pipe:
-    def __init__(self, zone, pipe_l,pipe_l_r,bends = []):
-        self.friction
-        self.diameter
+    def __init__(self, zone, pipe_l,pipe_l_r,diameter = 0):
+        self.friction = 0
+        self.diameter = diameter
         self.zone = zone
         self.length = pipe_l + pipe_l_r
-        self.bends = bends
+        self.diameter = diameter
     
     def getFriction(self):
         return self.friction
@@ -354,14 +399,16 @@ class Pipe:
 
     def setZone(self,zone):
         self.zone = zone   
-
-    def getBends(self):
-        return self.bends
+    
+    def getAdjustedDiameter(self):
+        return self.diameter
     
     #finds the diameter of pipe needed -- the next heighest diameter based on the ideal diameter
     def roundDiameter(self,diameter,pipe_id):
         for d in range(len(pipe_id)):
             if diameter <= pipe_id[d]:   
+                self.zone.setD(pipe_id[d])
+                self.diameter = pipe_id[d]
                 return d
     
     #find the lowest cost (and its assoc. delta height) out the delta heights when factoring in pipe friction
@@ -374,7 +421,6 @@ class Pipe:
         heights = [(x * (L * V ** 2) / (D * 2 * GRAVITY)) for x in pipe_data.keys()] 
         
         indexD = self.roundDiameter(D,pipe_id)
-
         costs = []
         for x in range(0, len(heights)): #the jesus loop - finds the costs for each respective delta height 
             height_wall = heights[x]     #next height in heights array
@@ -382,8 +428,8 @@ class Pipe:
             height_tot = height_wall / 2 + self.zone.getZoneHeight()  #effective height (h in mgh) for the water --> base zone height + 1/2 of the wall height
             area_new = self.zone.finalArea(height_tot, height_wall)   #calculates the new area of zone based on new wall height and effective water height  
             cost = self.zone.perimeter(area_new) * (30 + (height_wall - 5) * (60 - 30)/(7.5 - 5)) #cost due to the new height of the wall (perimeter)
-            cost += area_new * self.zone.getSitePrep()                                                 #adding cost to clear land based on clearing
-            cost += self.zone.getPipeLength() * pipe_data.get(pipe_data.keys()[x])[indexD]         #cost of all the pipes
+            cost += area_new * self.zone.getSitePrep()                                             #adding cost to clear land based on clearing
+            cost += self.zone.getPipeLength() * pipe_data[list(pipe_data.keys())[x]][indexD]         #cost of all the pipes ----  list(pipe_data[list(pipe_data)[x]])[indexD]
             costs.append(cost)                                                                     #append the cost to the parallel list
         
         cost_min = sys.maxsize
@@ -392,80 +438,68 @@ class Pipe:
             if cost < cost_min:
                 lowest = cost
                 index_low = costs.index(lowest)        
-
+        self.zone.setPipeFric(list(pipe_data.keys())[index_low])
         final_h = heights[index_low]
         self.zone.addWallHeight(final_h)
-        self.zone.addTotalCost(self.zone.getPipeLength() * pipe_data.get(pipe_data.keys()[lowest])[indexD])
+        print("pipe -- ", final_h)
+        self.zone.addTotalCost(self.zone.getPipeLength() * pipe_data[list(pipe_data.keys())[index_low]][indexD])
         self.friction = final_h * (D * 2 * GRAVITY) / (L * V ** 2)
-        self.zone.setPipeBox(pipe_data.get(pipe_data.keys()[x])[indexD])
+        self.zone.setPipeBox(pipe_data[list(pipe_data.keys())[index_low]][indexD])
         
+# A bend object represents a bend in a specific zone with a given angle and pipe object
 class Bend:
-    def __init__(self,zone, bend_angs):
+    def __init__(self,zone, bend_angs,pipe):
         self.bend_angs = bend_angs
         self.zone = zone
+        self.pipe = pipe
 
     def getBendAng(self):        
-        return self.bend_ang
-      
+        return self.bend_angs
 
-    def bendLoss(self,vel,bend_data,bend_id):       # takes in a bend angle and velocity and calculates energy lost
+# takes in a bend angle, velocity and calculates energy lost
+    def bendLoss(self,vel,bend_data,bend_id):       
         losses = 0
-        for raised in bend_angs.get(self.zone.getZoneNum()):
-            if (self.zone.getZoneNum() != 1 and self.zone.getPipeLength() == 0):
-                for ang in bend_angs.get(self.zone.getZoneNum())[1]:
-                    if (ang == 37.5):
-                        bcoe = (bend_data.get(30)[0] + bend_data.get(45)[0])/2
-                    else:
-                        bcoe = bend_data.get(ang)[0]
-            else:
-                for ang in bend_angs.get(self.zone.getZoneNum())[0]:
+        if (self.zone.getZoneNum() != 1 and self.zone.getPipeLength() == 0):
+            for ang in self.bend_angs[self.zone.getZoneNum()][1][1]:
+                if (ang == 37.5):
+                    bcoe = (bend_data.get(30)[0] + bend_data.get(45)[0])/2
+                else:
                     bcoe = bend_data.get(ang)[0]
-            losses += bcoe * ((vel ** 2)/(2 * GRAVITY))
+        else:
+            for ang in self.bend_angs[self.zone.getZoneNum()][0][1]:
+                bcoe = bend_data.get(ang)[0]
+        losses += bcoe * ((vel ** 2)/(2 * GRAVITY))
                  
         return losses
 
     def bendCostDown(self,time, bend_data,bend_id):
         volume = self.zone.finalVolume((self.zone.getAddHeight() / 2) + self.zone.getZoneHeight())  
         vel = self.zone.flowVelocityUp(volume/time)
+        diameter = self.pipe.getAdjustedDiameter()
+        heights = [self.bendLoss(vel,bend_data,bend_id) for x in bend_data.keys()]
 
+        height_tot = 0 
+        for x in heights: 
+            height_tot += x
 
+        self.zone.addWallHeight(height_tot)
+        print("ben", height_tot)
+        if (self.zone.getZoneNum() != 1 and self.zone.getPipeLength() == 0):
+            for ang in self.bend_angs.get(self.zone.getZoneNum())[1][1]:
+                if (ang == 37.5):
+                    self.zone.addTotalCost(bend_data.get(30)[1][bend_id.index(diameter)] + bend_data.get(45)[1][bend_id.index(diameter)])
+                else:
+                    self.zone.addTotalCost(bend_data.get(ang)[1][bend_id.index(diameter)])
+        else:
+            for ang in self.bend_angs.get(self.zone.getZoneNum())[0][1]:
+                self.zone.addTotalCost(list(bend_data[ang])[1][bend_id.index(diameter)])
 
-        heights = [self.bendLoss(vel,bend_data,bend_id) for x in turbine_data.keys()]
-
-        costs = []
-        for x in range(0, len(heights)): #the jesus loop 
-            height_wall = heights[x]     
-            height_wall += self.zone.getAddHeight() #changed to running total height
-            height_tot = height_wall / 2 + self.zone.getZoneHeight()
-            area_new = self.zone.finalArea(height_tot, height_wall)
-            cost = self.zone.perimeter(area_new) * (30 + (height_wall - 5) * (60 - 30)/(7.5 - 5 ))
-            cost += area_new * self.zone.getSitePrep()
-
-            index = self.roundEPR(height_tot,turbine_epr)
-
-            cost += self.zone.flowRateDown() * turbine_data.get(turbine_data.keys()[x])[index] #flow rate x unit cost at epr and height
-            costs.append(cost)
-        
-        cost_min = sys.maxsize
-        index_low = -1
-        for cost in costs:
-            if cost < cost_min:
-                cost_min = cost
-                index_low = costs.index(cost_min)    
-                break    
-
-        final_h = heights[index_low]
-        self.zone.addWallHeight(final_h)
-
-        final_epr = self.roundEPR((self.zone.getAddHeight() / 2 + self.zone.getZoneHeight()),bend_data)
-        self.zone.addTotalCost(self.zone.flowRateDown() * turbine_data.get(turbine_data.keys()[final_epr])[index_low]))  
 
     
-
+# Pump object represents a pump in a given zone with a specific pipe and bend
 class Pump:
     def __init__(self,zone,pipe,bends):
         self.pipe = pipe
-        self.elev = elev
         self.zone = zone
         self.bends = bends
         
@@ -490,28 +524,27 @@ class Pump:
         height += dE / (GRAVITY * self.zone.idealMass())
         return height
 
-    def bendLoss(self,vel,bend_data,bend_id):       # takes in a bend angle and velocity and calculates energy lost
+    def bendLoss(self,vel,bend_data,bend_id,bend_angs):       
         losses = 0
-        for raised in bend_angs.get(self.zone.getZoneNum()):
-            if (self.zone.getZoneNum() != 1 and self.zone.getPipeLength() == 0):
-                for ang in bend_angs.get(self.zone.getZoneNum())[1]:
-                    if (ang == 37.5):
-                        bcoe = (bend_data.get(30)[0] + bend_data.get(45)[0])/2
-                    else:
-                        bcoe = bend_data.get(ang)[0]
-            else:
-                for ang in bend_angs.get(self.zone.getZoneNum())[0]:
+        if (self.zone.getZoneNum() != 1 and self.zone.getPipeLength() == 0):
+            for ang in bend_angs.get(self.zone.getZoneNum())[1][1]:
+                if (ang == 37.5):
+                    bcoe = (bend_data.get(30)[0] + bend_data.get(45)[0])/2
+                else:
                     bcoe = bend_data.get(ang)[0]
-            losses += bcoe * ((vel ** 2)/(2 * GRAVITY))
+        else:
+            for ang in bend_angs.get(self.zone.getZoneNum())[0][1]:
+                bcoe = bend_data.get(ang)[0]
+        losses += bcoe * ((vel ** 2)/(2 * GRAVITY))
             
         return losses
-
-    def roundEPR(self,height,pump_epr):    # returns an effective performance rating rounded to the closest 
-        for e in range(len(turbine_epr)):  # viable value
-            if height <= pipe_id[e]:   
+    # returns an effective performance rating rounded to the closest 
+    def roundEPR(self,height,pump_epr):    
+        for e in range(len(pump_epr)):  
+            if height <= pump_epr[e]:   
                 return e
                 
-    def upFriction(self, time, pump_data,pump_epr, bend_data, bend_id): #dE is from pumpFlow     
+    def upFriction(self, time, pump_data,pump_epr, bend_data,bend_id,bend_angs): #dE is from pumpFlow     
         volume = self.zone.finalVolume((self.zone.getAddHeight() / 2) + self.zone.getZoneHeight())  
         heights = [self.heightPump(x, time, volume) for x in pump_data.keys()]
 
@@ -525,11 +558,11 @@ class Pump:
             cost = self.zone.perimeter(area_new) * (30 + (height_wall - 5) * (60 - 30)/(7.5 - 5 ))
             cost += area_new * self.zone.getSitePrep()
             velocity = self.zone.flowVelocityUp(volume/ time)
-            loss_b = self.bendLoss(velocity, bend_data, bend_id)
+            loss_b = self.bendLoss(velocity, bend_data, bend_id,bend_angs)
             height_tot += loss_b
             index = self.roundEPR(height_tot,pump_epr)
 
-            cost += self.zone.flowRateDown() * pump_data.get(pump_data.keys()[x])[index] #flow rate x unit cost at epr and height
+            cost += self.zone.flowRateDown() * pump_data[list(pump_data.keys())[x]][index] #flow rate x unit cost at epr and height
             costs.append(cost)
         
         cost_min = sys.maxsize
@@ -538,33 +571,33 @@ class Pump:
             if cost < cost_min:
                 cost_min = cost
                 index_low = costs.index(cost_min)    
-                break    
-
+                break
         final_h = heights[index_low]
+        self.zone.setPumpEff(list(pump_data.keys())[index_low])
         final_epr = self.roundEPR((final_h / 2 + self.zone.getAddHeight() / 2 + self.zone.getZoneHeight()),pump_epr)
-        self.zone.addTotalCost(self.zone.flowRateDown() * pump_data.get(pump_data.keys()[final_epr])[index_low]))
+        self.zone.addTotalCost(self.zone.flowRateDown() * pump_data[list(pump_data.keys())[index_low]][final_epr])
+        
         
 
-
+# Turbine objects represent turbines within a given zone and with a certain pipe object
 class Turbine:
     def __init__(self,zone,pipe):
         self.pipe = pipe
         self.zone = zone
 
-    def getEfficiency(self):
-        return self.efficiency
-
     def getPipe(self):
         return self.pipe  
 
-    def heightTurbine(self, n): # returns a height value based on gravitational potential energy
+    # returns a height value based on gravitational potential energy
+    def heightTurbine(self, n): 
         EIn = (ENERGY_OUT) / n
         dE = EIn - (ENERGY_OUT)
         return (dE) / (GRAVITY * self.zone.idealMass())
 
-    def roundEPR(self,epr,turbine_epr):    # returns an effective performance rating rounded to the closest 
-        for e in range(len(turbine_epr)):  # viable value
-            if epr <= pipe_id[e]:   
+    # returns an effective performance rating rounded to the closest 
+    def roundEPR(self,epr,turbine_epr):    
+        for e in range(len(turbine_epr)):  
+            if epr <= turbine_epr[e]:   
                 return e
 
     def turbineLoss(self, turbine_data, turbine_epr):
@@ -575,14 +608,18 @@ class Turbine:
         for x in range(0, len(heights)): #the jesus loop 
             height_wall = heights[x]     
             height_wall += self.zone.getAddHeight() #changed to running total height
+            print(height_wall)
             height_tot = height_wall / 2 + self.zone.getZoneHeight()
             area_new = self.zone.finalArea(height_tot, height_wall)
             cost = self.zone.perimeter(area_new) * (30 + (height_wall - 5) * (60 - 30)/(7.5 - 5 ))
             cost += area_new * self.zone.getSitePrep()
 
+            print(height_tot)
             index = self.roundEPR(height_tot,turbine_epr)
 
-            cost += self.zone.flowRateDown() * turbine_data.get(turbine_data.keys()[x])[index] #flow rate x unit cost at epr and height
+            #  cost += self.zone.getPipeLength() *  pipe_data[list(pipe_data.keys())[x]][indexD] 
+            print(index)
+            cost += self.zone.flowRateDown() * turbine_data[list(turbine_data.keys())[x]][index] #flow rate x unit cost at epr and height
             costs.append(cost)
         
         cost_min = sys.maxsize
@@ -595,14 +632,20 @@ class Turbine:
 
         final_h = heights[index_low]
         self.zone.addWallHeight(final_h)
-
+        print("turbine", final_h)
+        self.zone.setTurbEff(list(turbine_data.keys())[index_low])
         final_epr = self.roundEPR((self.zone.getAddHeight() / 2 + self.zone.getZoneHeight()),turbine_epr)
-        self.zone.addTotalCost(self.zone.flowRateDown() * turbine_data.get(turbine_data.keys()[final_epr])[index_low]))
+        self.zone.addTotalCost(self.zone.flowRateDown() * turbine_data[list(turbine_data.keys())[index_low]][final_epr])
 
         
 
 
 if __name__ == '__main__':
-                   
+    for i in range(1,4):
+        efficiency(i,False,12)
+    for i in range(2,4):
+        efficiency(i,True,12)
+
+                               
         
                                 
