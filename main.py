@@ -443,8 +443,8 @@ class Pipe:
         index_low = -1
         for cost in costs:          #gets lowest cost and index of that cost
             if cost < cost_min:
-                lowest = cost
-                index_low = costs.index(lowest)        
+                cost_min = cost
+                index_low = costs.index(cost_min)        
         self.zone.setPipeFric(list(pipe_data.keys())[index_low])
         final_h = heights[index_low]
         self.zone.addWallHeight(final_h)
