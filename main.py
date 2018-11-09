@@ -60,7 +60,7 @@ def output(cost,eff,zone,time):
     
     print("Most cost efficient system parameters for zone", zone.getZoneNum())
     print("Diameter of pipe:", zone.getPipeD(), "m")
-    print("Volumetric flow rate up:", zone.flowRateDown(), "m^3/s")      
+    print("Volumetric flow rate down:", zone.flowRateDown(), "m^3/s")      
     print("Volumetric flow rate up:", zone.finalVolume((zone.getAddHeight() / 2) + zone.getZoneHeight()) / time, "m^3/s")                       
     print("Pump efficiency coefficient:", zone.getPumpEff())
     print("Turbine efficiency coefficient:", zone.getTurbEff())
@@ -444,7 +444,8 @@ class Pipe:
         for cost in costs:          #gets lowest cost and index of that cost
             if cost < cost_min:
                 cost_min = cost
-                index_low = costs.index(cost_min)        
+                lowest = cost
+                index_low = costs.index(lowest)        
         self.zone.setPipeFric(list(pipe_data.keys())[index_low])
         final_h = heights[index_low]
         self.zone.addWallHeight(final_h)
